@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transformers without Normalization Portfolio</title>
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        // Tailwind configuration
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        'primary': '#007bff',
+                        'secondary': '#6c757d',
+                        'dark-bg': '#212529',
+                        'dark-text': '#f8f9fa',
+                        'light-bg': '#f8f9fa',
+                        'light-text': '#212529',
+                    },
+                    fontFamily: {
+                        sans: ['Arial', 'sans-serif'],
+                    },
+                },
+            },
+        }
+
+        // Dark mode toggle
+        function toggleDarkMode() {
+            const html = document.documentElement;
+            if (html.classList.contains('dark')) {
+                html.classList.remove('dark');
+                localStorage.setItem('darkMode', 'light');
+            } else {
+                html.classList.add('dark');
+                localStorage.setItem('darkMode', 'dark');
+            }
+        }
+
+        // Check for saved preference or system preference
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedMode = localStorage.getItem('darkMode');
+            if (savedMode === 'dark' || (!savedMode && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+            }
+        });
+    </script>
+    <style>
+        /* Custom styles */
+        body {
+            font-family: 'Arial', sans-serif;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .section-title {
+            font-size: 2em;
+            font-weight: bold;
+            margin-bottom: 1rem;
+            border-bottom: 2px solid;
+            padding-bottom: 0.5rem;
+        }
+        .card {
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 10px rgba(0, 0, 0, 0.2);
+        }
+        .algorithm-code {
+            background-color: #f0f0f0;
+            padding: 1rem;
+            border-radius: 0.375rem;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+        }
+        .dark .algorithm-code {
+            background-color: #333;
+            color: #eee;
+        }
+        .annotation {
+            margin-top: 0.5rem;
+            font-style: italic;
+            color: #666;
+        }
+        .dark .annotation {
+            color: #aaa;
+        }
+        .placeholder {
+            width: 100%;
+            height: 200px;
+            background-color: #eee;
+            border: 1px dashed #ccc;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+        .dark .placeholder {
+            background-color: #444;
+            border-color: #666;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 1rem;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .dark table {
+            border-color: #555;
+        }
+        .dark th {
+            background-color: #333;
+        }
+        .dark td {
+            border-color: #555;
+        }
+        .fade-in {
+            opacity: 0;
+            animation: fadeInAnimation 0.5s ease-in-out forwards;
+        }
+        @keyframes fadeInAnimation {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+    </style>
+</head>
+<body class="bg-light-bg text-light-text dark:bg-dark-bg dark:text-dark-text">
+    <div class="container">
+        <div class="flex justify-end mb-4">
+            <button onclick="toggleDarkMode()" class="px-4 py-2 rounded-md bg-primary text-white hover:bg-secondary transition-colors">
+                <i class="fas fa-moon"></i> / <i class="fas fa-sun"></i>
+            </button>
+        </div>
+
+        <h1 class="text-4xl font-bold mb-8 text-center">Transformers without Normalization</h1>
+
+        <!-- Section 1: Transformers without Normalization Summary -->
+        <section class="mb-12 fade-in">
+            <h2 class="section-title text-primary dark:text-secondary">论文总结</h2>
+            <div class="card bg-white dark:bg-gray-800">
+                <h3 class="text-xl font-semibold mb-4">核心内容</h3>
+                <p>这篇论文的核心内容是挑战了归一化层在现代神经网络训练中不可或缺的传统观念，提出了一种名为 Dynamic Tanh (DyT) 的简单替代方案，用于替代 Transformer 架构中的归一化层。通过广泛的实验验证，证明了使用 DyT 的 Transformer 模型可以在多种任务和设置下达到甚至超越使用归一化层的模型性能。</p>
+
+                <h3 class="text-xl font-semibold mt-6 mb-4">主要贡献</h3>
+                <ol class="list-decimal list-inside">
+                    <li><strong>提出 Dynamic Tanh (DyT)</strong>：受层归一化（LN）在 Transformer 中产生类似 tanh 的 S 形输入输出映射的启发，提出了 DyT 作为一种简单且有效的归一化层替代方案。DyT 通过学习一个适当的缩放因子 α 和利用有界的 tanh 函数来抑制极端值，无需计算激活统计量。</li>
+                    <li><strong>广泛的实验验证</strong>：在多种任务和模型上进行了实验，包括视觉识别、生成任务、监督学习、自监督学习、计算机视觉和语言模型等，证明了 DyT 的有效性。实验结果显示，使用 DyT 的模型在性能上与使用归一化层的模型相当，甚至在某些情况下表现更优。</li>
+                    <li><strong>挑战传统观念</strong>：通过实验和分析，挑战了归一化层在训练现代神经网络中不可或缺的观念，为理解归一化层在深度网络中的作用提供了新的见解。</li>
+                    <li><strong>效率提升</strong>：初步测量表明，DyT 可能提高训练和推理速度，使其成为效率导向的网络设计的候选方案。</li>
+                </ol>
+
+                <h3 class="text-xl font-semibold mt-6 mb-4">实现方式</h3>
+                <ol class="list-decimal list-inside">
+                    <li><strong>设计 Dynamic Tanh (DyT)</strong>：定义 DyT(x) = tanh(αx)，其中 α 是一个可学习的参数。这个操作可以直接替代 Transformer 架构中的归一化层，如层归一化（Layer Norm）或根均方归一化（RMSNorm）。
+                        <pre class="algorithm-code"><code># input x has the shape of [B, T, C] # B: batch size, T: tokens, C: dimension
+class DyT(Module):
+    def __init__(self, C, init_α):
+        super().__init__()
+        self.α = Parameter(ones(1) * init_α)  # 初始化可学习的标量参数 α
+        self.γ = Parameter(ones(C))          # 初始化可学习的通道向量参数 γ
+        self.β = Parameter(zeros(C))         # 初始化可学习的通道向量参数 β
+
+    def forward(self, x):
+        x = tanh(self.α * x)                 # 应用 tanh 函数对输入进行非线性变换
+        return self.γ * x + self.β           # 应用 γ 和 β 进行线性变换</code></pre>
+                        <p class="annotation">这段伪代码展示了如何用仅仅9行代码实现一个 DyT 层，这个层可以直接替代 Transformer 架构中的归一化层。DyT 层通过学习一个适当的缩放因子 α 和利用有界的 tanh 函数来抑制极端值，同时通过 γ 和 β 参数进行仿射变换，从而在不计算激活统计量的情况下，达到与归一化层相似的效果。这种方法不仅简单，而且在多种任务和模型上证明了其有效性。</p>
+                    </li>
+                    <li><strong>实验验证</strong>：在多种任务和模型上进行实验。</li>
+                    <li><strong>分析 DyT 的性质</strong>：通过分析 DyT 的计算效率、tanh 函数和可学习参数 α 的作用。</li>
+                    <li><strong>调整初始化策略</strong>：针对不同模型和任务，调整 DyT 中可学习参数 α 的初始化值。</li>
+                </ol>
+            </div>
+        </section>
+
+        <!-- Section 2: Algorithms, Figures, and Tables -->
+        <section class="mb-12 fade-in">
+            <h2 class="section-title text-primary dark:text-secondary">算法、图表与表格</h2>
+            
+            <!-- Algorithm 1 -->
+            <div class="card bg-white dark:bg-gray-800">
+                <h3 class="text-xl font-semibold mb-2">Algorithm 1: DyT 层的伪代码</h3>
+                <pre class="algorithm-code"><code># input x has the shape of [B, T, C] # B: batch size, T: tokens, C: dimension
+class DyT(Module):
+    def __init__(self, C, init_α):
+        super().__init__()
+        self.α = Parameter(ones(1) * init_α)
+        self.γ = Parameter(ones(C))
+        self.β = Parameter(zeros(C))
+    def forward(self, x):
+        x = tanh(self.alpha * x)
+        return self.γ * x + self.β</code></pre>
+                <p class="annotation">这段伪代码定义了一个名为DyT的模块，用于实现Dynamic Tanh（DyT）层。输入张量x的形状为[B, T, C]，分别代表批量大小、标记数和每个标记的嵌入维度。DyT层包含三个可学习的参数：α（一个标量参数，用于缩放输入）、γ（一个向量参数，用于通道级别的缩放）和β（一个向量参数，用于通道级别的偏移）。在前向传播过程中，输入x首先通过tanh函数进行非线性变换，然后与γ相乘并加上β，以实现对输入的缩放和偏移操作。</p>
+            </div>
+
+            <!-- Figures -->
+            <div class="card bg-white dark:bg-gray-800">
+                <h3 class="text-xl font-semibold mb-2">Figure 1: 原始 Transformer 块 vs. 使用 DyT 层的块</h3>
+                <img src="https://mmbiz.qpic.cn/mmbiz_jpg/ribyhfKKdd4mMvVXSFhXjplHaOE2dOhvc4Lm9jmHf2Q5CqnBPUnR2bG2Btqy5AVR7ySaiaWYIeV0jyAA6weHZibxw/640?wx_fmt=jpeg&tp=wxpic&wxfrom=5&wx_lazy=1&wx_co=1" alt="Figure 1: 原始 Transformer 块 vs. 使用 DyT 层的块">
+                <p class="annotation">这张图展示了原始Transformer块和使用Dynamic Tanh（DyT）层的Transformer块的对比。左侧是原始的Transformer块，右侧是替换为DyT层后的Transformer块。DyT层可以直接替代常用的Layer Norm或RMSNorm层，使用DyT的Transformer在性能上可以匹配或超过其归一化版本。</p>
+            </div>
+
+            <div class="card bg-white dark:bg-gray-800">
+                <h3 class="text-xl font-semibold mb-2">Figure 2: 选定的层归一化（LN）层的输出与输入</h3>
+                <img src="https://mmbiz.qpic.cn/mmbiz_jpg/ribyhfKKdd4mMvVXSFhXjplHaOE2dOhvciaE2ggSENCH1xEib5todTrr5ib2TMnVCRLKPIg3VNXPneRaF2SP0hfeNQ/640?wx_fmt=jpeg&tp=wxpic&wxfrom=5&wx_lazy=1&wx_co=1" alt="Figure 2: 选定的层归一化（LN）层的输出与输入">
+                <p class="annotation">这张图展示了在Vision Transformer（ViT）、wav2vec 2.0和Diffusion Transformer（DiT）模型中，选定的层归一化（LN）层的输入和输出关系。通过采样小批量样本，绘制了每个模型中四个LN层的输入和输出值。输出值是在LN的仿射变换之前。图中的S形曲线与tanh函数非常相似，这启发了我们提出使用具有可学习缩放因子α的Dynamic Tanh（DyT）层来替代LN层。</p>
+            </div>
+
+            <div class="card bg-white dark:bg-gray-800">
+                <h3 class="text-xl font-semibold mb-2">Figure 3: 不同 α 值的 tanh(αx)</h3>
+                <img src="https://mmbiz.qpic.cn/mmbiz_jpg/ribyhfKKdd4mMvVXSFhXjplHaOE2dOhvcSMBlI8EFZHk3O2jia2quPeRicNujlqq2gYY7e4750bhtibAB7AZLPMyHA/640?wx_fmt=jpeg&tp=wxpic&wxfrom=5&wx_lazy=1&wx_co=1" alt="Figure 3: 不同 α 值的 tanh(αx)">
+                <p class="annotation">这张图展示了具有三个不同α值的tanh(αx)函数曲线。对于所有三个模型，在较早的LN层（图2的第一列）中，输入和输出的关系主要是线性的，类似于x-y图中的直线。然而，在更深的LN层中，我们观察到了更有趣的现象。</p>
+            </div>
+
+            <div class="card bg-white dark:bg-gray-800">
+                <h3 class="text-xl font-semibold mb-2">Figure 4: 两个 LN 层的输出与输入，按通道和标记维度着色</h3>
+                <img src="https://mmbiz.qpic.cn/mmbiz_jpg/ribyhfKKdd4mMvVXSFhXjplHaOE2dOhvcx80zvZ0uzsyTbCb0bw52EIOE50PRkbqhtelVt0yqgcnj6wRcLgkyMQ/640?wx_fmt=jpeg&tp=wxpic&wxfrom=5&wx_lazy=1&wx_co=1" alt="Figure 4: 两个 LN 层的输出与输入，按通道和标记维度着色">
+                <p class="annotation">这张图展示了两个LN层的输出与输入关系，张量元素按不同的通道和标记维度着色。输入张量的形状为（样本数、标记数、通道数）。左两图中，表示同一标记（相同颜色）的点在不同通道上形成直线，因为LN对每个标记的通道进行线性操作。有趣的是，当集体绘制时，这些直线形成了非线性的tanh形曲线。右两图中，每个通道的输入在x轴上跨越不同的范围，为整体的tanh形曲线贡献不同的部分。某些通道（例如红色、绿色和粉色）具有更极端的x值，这些值被LN压缩。</p>
+            </div>
+
+             <div class="card bg-white dark:bg-gray-800">
+                <h3 class="text-xl font-semibold mb-2">Figure 5: ViT-B 和 ConvNeXt-B 模型的训练损失曲线</h3>
+                <img src="https://mmbiz.qpic.cn/mmbiz_jpg/ribyhfKKdd4mMvVXSFhXjplHaOE2dOhvc8RicfjLHNwibFKfW6LCONBF5iceJU8edBFLfY40yjXSR26dU7oXS4vTUA/640?wx_fmt=jpeg&tp=wxpic&wxfrom=5&wx_lazy=1&wx_co=1" alt="Figure 5: ViT-B 和 ConvNeXt-B 模型的训练损失曲线">
+                <p class="annotation">这张图展示了ViT-B和ConvNeXt-B模型的训练损失曲线。两种模型类型的损失曲线在LN和DyT之间表现出相似的模式，表明LN和DyT可能具有相似的学习动态。</p>
+            </div>
+
+            <div class="card bg-white dark:bg-gray-800">
+                <h3 class="text-xl font-semibold mb-2">Figure 6: LLaMA 预训练损失</h3>
+                <img src="https://mmbiz.qpic.cn/mmbiz_jpg/ribyhfKKdd4mMvVXSFhXjplHaOE2dOhvcZFficvCgFyAfMsXiapJSA1VePmWp5YWdZZXYkRibZlyl3QTOHasazS0IA/640?wx_fmt=jpeg&tp=wxpic&wxfrom=5&wx_lazy=1&wx_co=1" alt="Figure 6: LLaMA 预训练损失">
+                <p class="annotation">这张图展示了不同规模的LLaMA模型在预训练过程中的损失曲线。DyT和RMSNorm模型的损失曲线紧密对齐，表明它们在不同模型规模下具有相似的训练动态。</p>
+            </div>
+
+            <div class="card bg-white dark:bg-gray-800">
+                <h3 class="text-xl font-semibold mb-2">Figure 7: 三种压缩函数的曲线：tanh、hardtanh 和 sigmoid</h3>
+                <img src="https://mmbiz.qpic.cn/mmbiz_jpg/ribyhfKKdd4mMvVXSFhXjplHaOE2dOhvcrGibvZwDhrA3xq8Yr4dEqoGZiagiaJEUv48cYTF3riawfyUhm2keStGXtA/640?wx_fmt=jpeg&tp=wxpic&wxfrom=5&wx_lazy=1&wx_co=1" alt="Figure 7: 三种压缩函数的曲线：tanh、hardtanh 和 sigmoid">
+                <p class="annotation">这张图展示了三种压缩函数的曲线：tanh、hardtanh和sigmoid。这三种函数都将输入压缩到一个有界范围内，但在DyT层中使用时，tanh(x)的性能最佳。我们怀疑这可能是由于它的平滑性和以零为中心的特性。</p>
+            </div>
+
+            <div class="card bg-white dark:bg-gray-800">
+                <h3 class="text-xl font-semibold mb-2">Figure 8: ViT-B 模型中两个选定 DyT 层的 α 和 1/std</h3>
+                <img src="https://mmbiz.qpic.cn/mmbiz_jpg/ribyhfKKdd4mMvVXSFhXjplHaOE2dOhvc2ReJnMn3RYLAkFJx7pG4KFtE0R4TDYsicOtsm4JlXSrOfqXtTKJR0Qg/640?wx_fmt=jpeg&tp=wxpic&wxfrom=5&wx_lazy=1&wx_co=1" alt="Figure 8: ViT-B 模型中两个选定 DyT 层的 α 和 1/std">
+                <p class="annotation">这张图分为左右两部分。左图展示了从ViT-B模型中选择的两个DyT层，在每个epoch结束时，我们跟踪α和激活值的标准差的倒数（1/std），观察到它们在训练过程中共同演变。右图绘制了两个训练模型ViT-B和ConvNeXt-B的最终α值与输入激活值的1/std之间的关系，展示了两者之间的强烈相关性。</p>
+            </div>
+
+            <div class="card bg-white dark:bg-gray-800">
+                <h3 class="text-xl font-semibold mb-2">Figure 9: 不同任务在不同 α0 值下的性能</h3>
+                <img src="https://mmbiz.qpic.cn/mmbiz_jpg/ribyhfKKdd4mMvVXSFhXjplHaOE2dOhvc2ABSVe9tHY2vVGPAmSyJakmXqvp7iaoNY91picsj9b2icsekCNA6kqIPA/640?wx_fmt=jpeg&tp=wxpic&wxfrom=5&wx_lazy=1&wx_co=1" alt="Figure 9: 不同任务在不同 α0 值下的性能">
+                <p class="annotation">这张图展示了不同α0值下各种任务的性能表现。我们对第5节中使用的所有非LLM任务进行了基准测试，使用不同的α初始值。在广泛的α0值范围内，性能保持稳定。唯一的例外是监督式ViT-L模型（右上图），当α0值大于0.6时，训练会发散。</p>
+            </div>
+
+            <div class="card bg-white dark:bg-gray-800">
+                <h3 class="text-xl font-semibold mb-2">Figure 10: 不同 α0 值、学习率和模型规模下的稳定性</h3>
+                <img src="https://mmbiz.qpic.cn/mmbiz_jpg/ribyhfKKdd4mMvVXSFhXjplHaOE2dOhvcJgnYxzuNgh0X8GfTibJG1D45ZYBqb4pZeaC8KXH5qV4niazibdvMSjZqA/640?wx_fmt=jpeg&tp=wxpic&wxfrom=5&wx_lazy=1&wx_co=1" alt="Figure 10: 不同 α0 值、学习率和模型规模下的稳定性">
+                <p class="annotation">这张图展示了在不同的α0值、学习率和模型规模下训练的稳定性。我们在ImageNet-1K数据集上训练监督式ViT模型，观察到对于LN和DyT模型，较大的模型更容易出现不稳定。降低学习率或减少α0可以增强稳定性。当α0 = 0.5时，LN的稳定性与DyT相似。</p>
+            </div>
+
+            <div class="card bg-white dark:bg-gray-800">
+                <h3 class="text-xl font-semibold mb-2">Figure 11: 不同 α0 设置下的损失值热图</h3>
+                <img src="https://mmbiz.qpic.cn/mmbiz_jpg/ribyhfKKdd4mMvVXSFhXjplHaOE2dOhvcIz0XtGeoyBOWvdwJEiapr1RPCRoImuXh22Eq3Dd76zaOXUwNib5u7YHA/640?wx_fmt=jpeg&tp=wxpic&wxfrom=5&wx_lazy=1&wx_co=1" alt="Figure 11: 不同 α0 设置下的损失值热图">
+                <p class="annotation">这张图展示了在30B标记处，不同α0设置下的损失值热图。两种LLaMA模型都从注意力块中增加的α0中受益。</p>
+            </div>
+
+            <!-- Tables -->
+            <div class="card bg-white dark:bg-gray-800">
+                <h3 class="text-xl font-semibold mb-2">Table 1: ImageNet-1K 上的监督分类准确率</h3>
+                <table>
+                    <thead>
+                        <tr><th>模型</th><th>LN</th><th>DyT</th><th>变化</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>ViT-B</td><td>82.3%</td><td>82.5%</td><td>↑ 0.2%</td></tr>
+                        <tr><td>ViT-L</td><td>83.1%</td><td>83.6%</td><td>↑ 0.5%</td></tr>
+                        <tr><td>ConvNeXt-B</td><td>83.7%</td><td>83.7%</td><td></td></tr>
+                        <tr><td>ConvNeXt-L</td><td>84.3%</td><td>84.4%</td><td>↑ 0.1%</td></tr>
+                    </tbody>
+                </table>
+                <p class="annotation">这张表展示了在ImageNet-1K数据集上，使用层归一化（LN）和动态双曲正切（DyT）的监督分类准确率。对于ViT-B、ViT-L、ConvNeXt-B和ConvNeXt-L模型，DyT在不同架构和模型尺寸下均达到或优于LN的性能。</p>
+            </div>
+
+            <div class="card bg-white dark:bg-gray-800">
+                <h3 class="text-xl font-semibold mb-2">Table 2: ImageNet-1K 上的自监督学习准确率</h3>
+                <table>
+                    <thead><tr><th>模型</th><th>LN</th><th>DyT</th><th>变化</th></tr></thead>
+                    <tbody>
+                        <tr><td>MAE ViT-B</td><td>83.2%</td><td>83.2%</td><td></td></tr>
+                        <tr><td>MAE ViT-L</td><td>85.5%</td><td>85.4%</td><td>↓ 0.1%</td></tr>
+                        <tr><td>DINO ViT-B (patch size 16)</td><td>83.2%</td><td>83.4%</td><td>↑ 0.2%</td></tr>
+                        <tr><td>DINO ViT-B (patch size 8)</td><td>84.1%</td><td>84.5%</td><td>↑ 0.4%</td></tr>
+                    </tbody>
+                </table>
+                <p class="annotation">这张表展示了在ImageNet-1K数据集上，使用层归一化（LN）和动态双曲正切（DyT）的自监督学习准确率。对于MAE和DINO两种预训练方法，以及不同模型尺寸的ViT-B和ViT-L模型，DyT在自监督学习任务中的表现与LN相当。</p>
+            </div>
+
+            <div class="card bg-white dark:bg-gray-800">
+                <h3 class="text-xl font-semibold mb-2">Table 3: ImageNet 上的图像生成质量（FID，越低越好）</h3>
+                <table>
+                    <thead><tr><th>模型</th><th>LN</th><th>DyT</th><th>变化</th></tr></thead>
+                    <tbody>
+                        <tr><td>DiT-B</td><td>64.9</td><td>63.9</td><td>↓ 1.0</td></tr>
+                        <tr><td>DiT-L</td><td>45.9</td><td>45.7</td><td>↓ 0.2</td></tr>
+                        <tr><td>DiT-XL</td><td>19.9</td><td>20.8</td><td>↑ 0.9</td></tr>
+                    </tbody>
+                </table>
+                <p class="annotation">这张表展示了在ImageNet数据集上，使用层归一化（LN）和动态双曲正切（DyT）的不同尺寸Diffusion Transformer（DiT）模型的图像生成质量（FID分数，越低越好）。DyT在各种DiT模型尺寸下均达到与LN相当或更优的FID分数。</p>
+            </div>
+
+            <div class="card bg-white dark:bg-gray-800">
+                <h3 class="text-xl font-semibold mb-2">Table 4: 语言模型的训练损失和 15 个零样本 lm-eval 任务的平均性能</h3>
+                <table>
+                    <thead><tr><th>分数 / 损失</th><th>RMSNorm</th><th>DyT</th><th>变化</th></tr></thead>
+                    <tbody>
+                        <tr><td>LLaMA 7B</td><td>0.513 / 1.59</td><td>0.513 / 1.60</td><td>- / ↑ 0.01</td></tr>
+                        <tr><td>LLaMA 13B</td><td>0.529 / 1.53</td><td>0.529 / 1.54</td><td>- / ↑ 0.01</td></tr>
+                        <tr><td>LLaMA 34B</td><td>0.536 / 1.50</td><td>0.536 / 1.50</td><td>- / </td></tr>
+                        <tr><td>LLaMA 70B</td><td>0.549 / 1.45</td><td>0.549 / 1.45</td><td>- / </td></tr>
+                    </tbody>
+                </table>
+                <p class="annotation">这张表展示了使用RMSNorm和DyT的LLaMA语言模型的训练损失和在15个零样本lm-eval任务上的平均性能。对于7B、13B、34B和70B模型，DyT在零样本性能和训练损失上均与RMSNorm相当。</p>
+            </div>
+
+            <div class="card bg-white dark:bg-gray-800">
+                <h3 class="text-xl font-semibold mb-2">Table 5: LibriSpeech 上的语音预训练验证损失</h3>
+                <table>
+                    <thead><tr><th>模型</th><th>LN</th><th>DyT</th><th>变化</th></tr></thead>
+                    <tbody>
+                        <tr><td>wav2vec 2.0 Base</td><td>1.95</td><td>1.95</td><td></td></tr>
+                        <tr><td>wav2vec 2.0 Large</td><td>1.92</td><td>1.91</td><td>↓ 0.01</td></tr>
+                    </tbody>
+                </table>
+                <p class="annotation">这张表展示了在LibriSpeech数据集上，使用层归一化（LN）和动态双曲正切（DyT）的wav2vec 2.0语音预训练模型的验证损失。对于基础版和大型版的wav2vec 2.0模型，DyT的表现与LN相当。</p>
+            </div>
+
+            <div class="card bg-white dark:bg-gray-800">
+                <h3 class="text-xl font-semibold mb-2">Table 6: GenomicBenchmarks 上的 DNA 分类准确率</h3>
+                <table>
+                    <thead><tr><th>模型</th><th>LN</th><th>DyT</th><th>变化</th></tr></thead>
+                    <tbody>
+                        <tr><td>HyenaDNA (Nguyen et al., 2024)</td><td>85.2%</td><td>85.2%</td><td></td></tr>
+                        <tr><td>Caduceus (Schiff et al., 2024)</td><td>86.9%</td><td>86.9%</td><td></td></tr>
+                    </tbody>
+                </table>
+                <p class="annotation">这张表展示了在GenomicBenchmarks数据集上，使用层归一化（LN）和动态双曲正切（DyT）的DNA分类准确率。对于HyenaDNA和Caduceus模型，DyT的表现与LN相当。</p>
+            </div>
+
+            <div class="card bg-white dark:bg-gray-800">
+                <h3 class="text-xl font-semibold mb-2">Table 7: LLaMA 7B（BF16 精度）的推理和训练延迟</h3>
+                <table>
+                    <thead><tr><th></th><th>推理</th><th>训练</th></tr></thead>
+                    <tbody>
+                        <tr><td>LLaMA 7B 层</td><td></td><td></td></tr>
+                        <tr><td>RMSNorm</td><td>2.1s</td><td>8.3s</td></tr>
+                        <tr><td>DyT</td><td>1.0s</td><td>4.8s</td></tr>
+                        <tr><td>减少</td><td>↓ 52.4%</td><td>↓ 42.2%</td></tr>
+                        <tr><td>LLaMA 7B 模型</td><td></td><td></td></tr>
+                        <tr><td>RMSNorm</td><td>14.1s</td><td>42.6s</td></tr>
+                        <tr><td>DyT</td><td>13.0s</td><td>39.1s</td></tr>
+                        <tr><td>减少</td><td>↓ 7.8%</td><td>↓ 8.2%</td></tr>
+                    </tbody>
+                </table>
+                <p class="annotation">这张表展示了使用RMSNorm和DyT的LLaMA 7B模型在BF16精度下的推理和训练延迟。对于模型层和整个模型，DyT相比RMSNorm显著减少了推理和训练时间。</p>
+            </div>
+
+            <div class="card bg-white dark:bg-gray-800">
+                <h3 class="text-xl font-semibold mb-2">Table 8: 使用不同压缩函数的 ImageNet-1K 分类准确率</h3>
+                <table>
+                    <thead><tr><th>模型</th><th>identity</th><th>tanh</th><th>hardtanh</th><th>sigmoid</th></tr></thead>
+                    <tbody>
+                        <tr><td>ViT-S</td><td>58.5% → failed</td><td>80.3%</td><td>79.9%</td><td>79.6%</td></tr>
+                        <tr><td>ViT-B</td><td>61.0% → failed</td><td>82.5%</td><td>82.2%</td><td>81.6%</td></tr>
+                    </tbody>
+                </table>
+                <p class="annotation">这张表展示了使用不同压缩函数（恒等函数、tanh、hardtanh、sigmoid）的ImageNet-1K分类准确率。所有实验均遵循与原始基于LN的模型相同的训练配方。压缩函数在防止发散方面起着关键作用，其中tanh在三个函数中性能最高。“→ failed”表示训练在某个阶段发散，前面的数字表示发散前达到的最高准确率。</p>
+            </div>
+
+            <div class="card bg-white dark:bg-gray-800">
+                <h3 class="text-xl font-semibold mb-2">Table 9: 使用 ViT-B 的 ImageNet-1K 分类准确率</h3>
+                <table>
+                    <thead><tr><th>模型</th><th>tanh</th><th>hardtanh</th><th>sigmoid</th></tr></thead>
+                    <tbody>
+                        <tr><td>without α</td><td>81.1%</td><td>80.7%</td><td>80.7%</td></tr>
+                        <tr><td>with α</td><td>82.5%</td><td>82.2%</td><td>81.6%</td></tr>
+                    </tbody>
+                </table>
+                <p class="annotation">这张表展示了使用ViT-B模型在ImageNet-1K数据集上的分类准确率，比较了使用和不使用可学习参数α的情况。所有实验均遵循与原始基于LN的模型相同的训练配方。结果表明，可学习的α对于提高模型性能至关重要。</p>
+            </div>
+
+            <div class="card bg-white dark:bg-gray-800">
+                <h3 class="text-xl font-semibold mb-2">Table 10: ImageNet-1K 上的分类准确率</h3>
+                <table>
+                    <thead><tr><th>模型</th><th>LN</th><th>Fixup</th><th>SkipInit</th><th>σReparam</th><th>DyT</th></tr></thead>
+                    <tbody>
+                        <tr><td>ViT-B</td><td>82.3%</td><td>77.2%</td><td>74.1%</td><td>82.5%</td><td>82.8%</td></tr>
+                        <tr><td>ViT-L</td><td>83.1%</td><td>78.1%</td><td>75.6%</td><td>83.0%</td><td>83.6%</td></tr>
+                        <tr><td>MAE ViT-B</td><td>83.2%</td><td>73.7%</td><td>73.1%</td><td>83.2%</td><td>83.7%</td></tr>
+                        <tr><td>MAE ViT-L</td><td>85.5%</td><td>74.1%</td><td>74.0%</td><td>85.4%</td><td>85.8%</td></tr>
+                    </tbody>
+                </table>
+                <p class="annotation">这张表展示了在ImageNet-1K数据集上，不同方法（层归一化LN、Fixup、SkipInit、σReparam、DyT）的分类准确率。对于ViT-B、ViT-L、MAE ViT-B和MAE ViT-L模型，DyT在不同配置下均优于其他方法。</p>
+            </div>
+
+            <div class="card bg-white dark:bg-gray-800">
+                <h3 class="text-xl font-semibold mb-2">Table 11: 不同 LLaMA 模型的最佳 α0</h3>
+                <table>
+                    <thead><tr><th>模型</th><th>宽度</th><th>深度</th><th>最佳 α0 (注意力/其他)</th></tr></thead>
+                    <tbody>
+                        <tr><td>LLaMA 7B</td><td>4096</td><td>32</td><td>0.8/0.2</td></tr>
+                        <tr><td>LLaMA 13B</td><td>5120</td><td>40</td><td>0.6/0.15</td></tr>
+                        <tr><td>LLaMA 34B</td><td>8196</td><td>48</td><td>0.2/0.05</td></tr>
+                        <tr><td>LLaMA 70B</td><td>8196</td><td>80</td><td>0.2/0.05</td></tr>
+                    </tbody>
+                </table>
+                <p class="annotation">这张表展示了不同LLaMA模型的最佳α0值。较大的模型需要较小的α0值。我们发现，在注意力块（“attention”）、前馈网络块（FFN）和输出前的最终DyT层（“other”）中，初始化α的方式应该不同。注意力块中的α0需要较大的值。</p>
+            </div>
+
+            <div class="card bg-white dark:bg-gray-800">
+                <h3 class="text-xl font-semibold mb-2">Table 12: LLaMA 训练中不同模型宽度和深度的最佳 α0（注意力/其他）</h3>
+                <table>
+                    <thead><tr><th>宽度 / 深度</th><th>8</th><th>16</th><th>32</th><th>64</th></tr></thead>
+                    <tbody>
+                        <tr><td>1024</td><td>1.0/1.0</td><td>1.0/1.0</td><td>1.0/1.0</td><td>1.0/1.0</td></tr>
+                        <tr><td>2048</td><td>1.0/0.5</td><td>1.0/0.5</td><td>1.0/0.5</td><td>1.0/0.5</td></tr>
+                        <tr><td>4096</td><td>0.8/0.2</td><td>0.8/0.2</td><td>0.8/0.2</td><td>0.8/0.2</td></tr>
+                        <tr><td>8192</td><td>0.2/0.05</td><td>0.2/0.05</td><td>0.2/0.05</td><td>0.2/0.05</td></tr>
+                    </tbody>
+                </table>
+                <p class="annotation">这张表展示了在LLaMA训练中，不同模型宽度和深度的最佳α0值（注意力/其他）。模型宽度对α0的选择有显著影响，较宽的网络需要较小的值。相比之下，模型深度的影响可以忽略不计。</p>
+            </div>
+
+            <div class="card bg-white dark:bg-gray-800">
+                <h3 class="text-xl font-semibold mb-2">Table 13: 不同学习率和 DyT 模型调整后的性能比较</h3>
+                <table>
+                    <thead>
+                        <tr><th>模型</th><th>LN (原始)</th><th>DyT (原始)</th><th>LN (调整后)</th><th>DyT (调整后)</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>ViT-B</td><td>82.3% (4e-3)</td><td>82.5% (4e-3)</td><td>82.8% (6e-3)</td><td></td></tr>
+                        <tr><td>ViT-L</td><td>83.1% (4e-3)</td><td>83.6% (4e-3)</td><td></td><td></td></tr>
+                        <tr><td>ConvNeXt-B</td><td>83.7% (4e-3)</td><td>83.7% (4e-3)</td><td></td><td></td></tr>
+                        <tr><td>ConvNeXt-L</td><td>84.3% (4e-3)</td><td>84.4% (4e-3)</td><td></td><td></td></tr>
+                        <tr><td>MAE ViT-B</td><td>83.2% (2.4e-3)</td><td>83.2% (2.4e-3)</td><td>83.7% (3.2e-3)</td><td></td></tr>
+                        <tr><td>MAE ViT-L</td><td>85.5% (2.4e-3)</td><td>85.4% (2.4e-3)</td><td>85.8% (3.2e-3)</td><td></td></tr>
+                        <tr><td>DINO ViT-B (patch size 16)</td><td>83.2% (7.5e-4)</td><td>83.4% (7.5e-4)</td><td>83.3% (1e-3)</td><td></td></tr>
+                        <tr><td>DINO ViT-B (patch size 8)</td><td>84.1% (5e-4)</td><td>84.5% (5e-4)</td><td></td><td></td></tr>
+                        <tr><td>DiT-B</td><td>64.9 (4e-4)</td><td>63.9 (4e-4)</td><td></td><td></td></tr>
+                        <tr><td>DiT-L</td><td>45.9 (4e-4)</td><td>45.7 (4e-4)</td><td></td><td></td></tr>
+                        <tr><td>DiT-XL</td><td>19.9 (4e-4)</td><td>20.8 (4e-4)</td><td></td><td></td></tr>
+                        <tr><td>wav2vec 2.0 Base</td><td>1.95 (5e-4)</td><td>1.95 (5e-4)</td><td>1.94 (6e-4)</td><td></td></tr>
+                        <tr><td>wav2vec 2.0 Large</td><td>1.92 (3e-4)</td><td>1.91 (3e-4)</td><td></td><td></td></tr>
+                        <tr><td>HyenaDNA</td><td>85.2% (6e-4)</td><td>85.2% (6e-4)</td><td></td><td></td></tr>
+                        <tr><td>Caduceus</td><td>86.9% (8e-3)</td><td>86.9% (8e-3)</td><td></td><td></td></tr>
+                    </tbody>
+                </table>
+                <p class="annotation">这张表比较了LN和DyT模型在原始学习率和调整后学习率下的性能。结果显示，对于DyT模型，调整学习率仅提供了适度的性能提升，表明为LN模型优化的默认超参数已经非常适合DyT模型。标记为“-”的条目表示与原始学习率相比没有性能提升。括号中的值表示使用的学习率。</p>
+            </div>
+            
+            <div class="card bg-white dark:bg-gray-800">
+                <h3 class="text-xl font-semibold mb-2">Table 14: 调整 DyT 模型中 α0 的影响</h3>
+                <table>
+                    <thead>
+                        <tr><th>模型</th><th>LN</th><th>DyT (α0 = 0.5)</th><th>DyT (调整后)</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>ViT-B</td><td>82.3%</td><td>82.5%</td><td>82.6% (α0 = 1.0)</td></tr>
+                        <tr><td>ViT-L</td><td>83.1%</td><td>83.6%</td><td></td></tr>
+                        <tr><td>ConvNeXt-B</td><td>83.7%</td><td>83.7%</td><td></td></tr>
+                        <tr><td>ConvNeXt-L</td><td>84.3%</td><td>84.4%</td><td></td></tr>
+                        <tr><td>MAE ViT-B</td><td>83.2%</td><td>83.2%</td><td>83.4% (α0 = 1.0)</td></tr>
+                        <tr><td>MAE ViT-L</td><td>85.5%</td><td>85.4%</td><td></td></tr>
+                        <tr><td>DINO ViT-B (patch 16)</td><td>83.2%</td><td>83.4%</td><td></td></tr>
+                        <tr><td>DINO ViT-B (patch 8)</td><td>84.1%</td><td>84.5%</td><td></td></tr>
+                        <tr><td>DiT-B</td><td>64.9</td><td>63.9</td><td></td></tr>
+                        <tr><td>DiT-L</td><td>45.9</td><td>45.7</td><td></td></tr>
+                        <tr><td>DiT-XL</td><td>19.9</td><td>20.8</td><td></td></tr>
+                        <tr><td>wav2vec 2.0 Base</td><td>1.95</td><td>1.95</td><td></td></tr>
+                        <tr><td>wav2vec 2.0 Large</td><td>1.92</td><td>1.91</td><td>1.90 (α0 = 1.0)</td></tr>
+                        <tr><td>HyenaDNA</td><td>85.2%</td><td>85.2%</td><td></td></tr>
+                        <tr><td>Caduceus</td><td>86.9%</td><td>86.9%</td><td></td></tr>
+                    </tbody>
+                </table>
+                <p class="annotation">这张表展示了在DyT模型中调整α0的影响。从默认值（α0 = 0.5）优化α0仅能为部分DyT模型带来轻微的性能提升，这意味着默认初始化已经接近最优性能。标记为“-”的条目表示与默认α0相比没有改进。</p>
+            </div>
+            
+            <div class="card bg-white dark:bg-gray-800">
+                <h3 class="text-xl font-semibold mb-2">Table 15: ImageNet-1K 分类准确率 with BN and DyT.</h3>
+                <table>
+                    <thead>
+                        <tr><th>模型</th><th>BN</th><th>DyT</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>ResNet-50</td><td>76.2%</td><td>68.9%</td></tr>
+                        <tr><td>VGG19</td><td>72.7%</td><td>71.0%</td></tr>
+                    </tbody>
+                </table>
+                <p class="annotation">这张表展示了在ResNet-50和VGG19模型中，使用批量归一化（BN）和动态双曲正切（DyT）的ImageNet-1K分类准确率。将BN替换为DyT会导致性能下降，表明DyT无法完全替代这些架构中的BN。</p>
+            </div>
