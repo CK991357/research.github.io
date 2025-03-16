@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Research Note</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            margin: 20px;
+        }
+        h1 {
+            text-align: center;
+        }
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+        li {
+            margin-bottom: 20px;
+            border-bottom: 1px solid #ccc;
+            padding-bottom: 10px;
+        }
+        .title {
+            font-weight: bold;
+        }
+        .date {
+            font-style: italic;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <h1>Research Note</h1>
+
+    <ul>
+        <li>
+            <a href="Transformers_without_Normalization.html" class="title">Transformers without Normalization</a><br>
+            <span class="date">2025-03-16</span><br>
+            This article challenges the conventional wisdom that normalization layers are indispensable in modern neural network training, proposing Dynamic Tanh (DyT) as a simple alternative to normalization layers in the Transformer architecture.
+        </li>
+        <!-- Add more articles here -->
+    </ul>
+
+    <h2>Adding New Articles</h2>
+    <p>To add a new article:</p>
+    <ol>
+        <li>Create a new HTML file for the article (e.g., <code>new_article.html</code>).</li>
+        <li>Add a new list item (<code><li></code>) to the list above.</li>
+        <li>
+            Inside the list item, include:
+            <ul>
+                <li>An anchor tag (<code><a></code>) with the <code>href</code> attribute pointing to the new HTML file and the article title as the link text.</li>
+                <li>The publication date (e.g., <code><span class="date">YYYY-MM-DD</span></code>).</li>
+                <li>A short description of the article.</li>
+            </ul>
+        </li>
+    </ol>
+    <p>Example:</p>
+<pre>
+<li>
+    <a href="new_article.html" class="title">Your New Article Title</a><br>
+    <span class="date">2025-04-20</span><br>
+    A brief description of your new article.
+</li>
+</pre>
+
+</body>
+</html>
